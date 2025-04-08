@@ -1,295 +1,880 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Efecto de Degradado con Mouse</title>
-    <link rel="stylesheet" href="../../estilos/configuracion.css" />
-    <link rel="stylesheet" href="./animaciones_simples.css" />
-    <link rel="stylesheet" href="./laboratorio.css" />
-    <link rel="stylesheet" href="./menu__configuracion.css" />
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Divisor de JSON</title>
     <style>
-      .contenedor__laboratorio {
-        display: grid;
-        grid-template-columns: repeat(10, 1fr);
-        grid-template-rows: repeat(10, 1fr);
-        height: 150vh; /* 50% de la altura de la pantalla */
-        gap: 5px;
-      }
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2980b9;
+            --background-color: #f5f5f5;
+            --panel-color: #ffffff;
+            --border-color: #ddd;
+            --text-color: #333;
+            --success-color: #2ecc71;
+            --error-color: #e74c3c;
+        }
 
-      .contenedor__laboratorio div {
-        border: 1px solid #ccc;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 14px;
-      }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            max-width: 1200px;
+            margin: 0 auto;
+            gap: 20px;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .main-content {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .panel {
+            background-color: var(--panel-color);
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .panel h2 {
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 300px;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            resize: vertical;
+            font-family: monospace;
+            margin-bottom: 15px;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            background-color: var(--secondary-color);
+        }
+
+        button:disabled {
+            background-color: var(--border-color);
+            cursor: not-allowed;
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .button-secondary {
+            background-color: #95a5a6;
+        }
+
+        .button-secondary:hover {
+            background-color: #7f8c8d;
+        }
+
+        .button-success {
+            background-color: var(--success-color);
+        }
+
+        .button-success:hover {
+            background-color: #27ae60;
+        }
+
+        .button-danger {
+            background-color: var(--error-color);
+        }
+
+        .button-danger:hover {
+            background-color: #c0392b;
+        }
+
+        #jsonTree {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 15px;
+            background-color: #f9f9f9;
+        }
+
+        .json-node {
+            margin-left: 20px;
+            position: relative;
+        }
+
+        .json-node-label {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            padding: 5px 0;
+        }
+
+        .json-node-label:hover {
+            background-color: #f0f0f0;
+        }
+
+        .json-node-label .checkbox {
+            margin-right: 10px;
+        }
+
+        .json-node-expand {
+            cursor: pointer;
+            margin-right: 5px;
+            display: inline-block;
+            width: 10px;
+            text-align: center;
+        }
+
+        .json-key {
+            color: #2980b9;
+            font-weight: bold;
+        }
+
+        .json-string {
+            color: #27ae60;
+        }
+
+        .json-number {
+            color: #8e44ad;
+        }
+
+        .json-boolean {
+            color: #d35400;
+        }
+
+        .json-null {
+            color: #7f8c8d;
+        }
+
+        .selected-json {
+            margin-top: 20px;
+        }
+
+        #savedJsonsList {
+            list-style: none;
+            margin-top: 15px;
+        }
+
+        #savedJsonsList li {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            margin-bottom: 10px;
+            background-color: #f9f9f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #savedJsonsList li:hover {
+            background-color: #f0f0f0;
+        }
+
+        .saved-json-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .saved-json-buttons button {
+            padding: 5px 10px;
+            margin: 0;
+        }
+
+        .notification {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .notification.success {
+            background-color: rgba(46, 204, 113, 0.2);
+            color: var(--success-color);
+            border: 1px solid var(--success-color);
+        }
+
+        .notification.error {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: var(--error-color);
+            border: 1px solid var(--error-color);
+        }
+
+        #pathInput {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+        }
     </style>
-  </head>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Divisor de JSON</h1>
+            <p>Divide, guarda y edita archivos JSON de forma sencilla</p>
+        </header>
 
-  <body>
-    <!-- Ícono de configuración con el logo de Google -->
-    <div>
-      <div class="menu__config" id="config-icon">
-        <i class="material-icons">settings</i>
-      </div>
+        <div class="main-content">
+            <div class="panel">
+                <h2>JSON Original</h2>
+                <div id="originalJsonNotification" class="notification"></div>
+                <textarea id="jsonInput" placeholder="Pega tu JSON aquí o carga un archivo..."></textarea>
+                <div class="button-group">
+                    <button id="loadJsonBtn">Cargar JSON</button>
+                    <button id="loadFileBtn" class="button-secondary">Cargar desde archivo</button>
+                    <input type="file" id="fileInput" accept=".json" style="display: none;">
+                    <button id="formatJsonBtn" class="button-secondary">Formatear JSON</button>
+                </div>
+            </div>
 
-      <div class="menu__config__toggle-menu" id="config-menu">
-        <label>
-          <input type="radio" name="theme" value="light" id="theme-light" />
-          Tema Claro
-        </label>
-        <label>
-          <input type="radio" name="theme" value="dark" id="theme-dark" /> Tema
-          Oscuro
-        </label>
-        <label>
-          <input
-            type="radio"
-            name="theme"
-            value="space"
-            id="theme-space"
-            checked
-          />
-          Tema Espacial (Predeterminado)
-        </label>
-      </div>
+            <div class="panel">
+                <h2>Estructura del JSON</h2>
+                <div id="treeNotification" class="notification"></div>
+                <div id="jsonTree">
+                    <p>Carga un JSON para ver su estructura.</p>
+                </div>
+                <div class="button-group">
+                    <button id="selectAllBtn" disabled>Seleccionar todo</button>
+                    <button id="deselectAllBtn" disabled>Deseleccionar todo</button>
+                    <button id="extractSelectedBtn" disabled>Extraer seleccionados</button>
+                </div>
+                <input type="text" id="pathInput" placeholder="Filtrar por ruta (por ejemplo: data.users)" disabled>
+                <button id="applyPathBtn" disabled>Aplicar filtro</button>
+            </div>
 
-      <script>
-        document
-          .getElementById("config-icon")
-          .addEventListener("click", function () {
-            var menu = document.getElementById("config-menu");
-            menu.style.display =
-              menu.style.display === "block" ? "none" : "block";
-          });
+            <div class="panel">
+                <h2>JSON Extraído</h2>
+                <div id="extractedJsonNotification" class="notification"></div>
+                <textarea id="extractedJson" placeholder="Aquí aparecerá el JSON extraído" readonly></textarea>
+                <div class="button-group">
+                    <button id="saveJsonBtn" disabled>Guardar en localStorage</button>
+                    <button id="downloadJsonBtn" disabled class="button-success">Descargar como archivo</button>
+                    <button id="clearExtractedBtn" disabled class="button-danger">Limpiar</button>
+                </div>
 
-        document.querySelectorAll('input[name="theme"]').forEach((input) => {
-          input.addEventListener("change", function () {
-            document.body.className = ""; // Elimina clases existentes
-            if (this.value === "light") {
-              document.body.classList.add("theme-light");
-            } else if (this.value === "dark") {
-              document.body.classList.add("theme-dark");
-            } else {
-              document.body.classList.add("theme-space");
+                <div class="selected-json">
+                    <h3>JSONs Guardados</h3>
+                    <ul id="savedJsonsList"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elementos del DOM
+            const jsonInput = document.getElementById('jsonInput');
+            const jsonTree = document.getElementById('jsonTree');
+            const extractedJson = document.getElementById('extractedJson');
+            const savedJsonsList = document.getElementById('savedJsonsList');
+            const pathInput = document.getElementById('pathInput');
+            
+            // Botones
+            const loadJsonBtn = document.getElementById('loadJsonBtn');
+            const loadFileBtn = document.getElementById('loadFileBtn');
+            const fileInput = document.getElementById('fileInput');
+            const formatJsonBtn = document.getElementById('formatJsonBtn');
+            const selectAllBtn = document.getElementById('selectAllBtn');
+            const deselectAllBtn = document.getElementById('deselectAllBtn');
+            const extractSelectedBtn = document.getElementById('extractSelectedBtn');
+            const saveJsonBtn = document.getElementById('saveJsonBtn');
+            const downloadJsonBtn = document.getElementById('downloadJsonBtn');
+            const clearExtractedBtn = document.getElementById('clearExtractedBtn');
+            const applyPathBtn = document.getElementById('applyPathBtn');
+            
+            // Notificaciones
+            const originalJsonNotification = document.getElementById('originalJsonNotification');
+            const treeNotification = document.getElementById('treeNotification');
+            const extractedJsonNotification = document.getElementById('extractedJsonNotification');
+
+            // Variables globales
+            let originalJsonData = null;
+            let selectedPaths = new Set();
+            let savedJsons = loadSavedJsonsFromLocalStorage();
+            
+            // Cargar JSONs guardados en localStorage al iniciar
+            renderSavedJsonsList();
+
+            // Event Listeners
+            loadJsonBtn.addEventListener('click', loadJson);
+            loadFileBtn.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', loadJsonFromFile);
+            formatJsonBtn.addEventListener('click', formatJson);
+            selectAllBtn.addEventListener('click', selectAllNodes);
+            deselectAllBtn.addEventListener('click', deselectAllNodes);
+            extractSelectedBtn.addEventListener('click', extractSelectedNodes);
+            saveJsonBtn.addEventListener('click', saveJsonToLocalStorage);
+            downloadJsonBtn.addEventListener('click', downloadJson);
+            clearExtractedBtn.addEventListener('click', clearExtractedJson);
+            applyPathBtn.addEventListener('click', applyPathFilter);
+
+            // Funciones
+            function showNotification(element, message, type) {
+                element.textContent = message;
+                element.className = `notification ${type}`;
+                element.style.display = 'block';
+                
+                setTimeout(() => {
+                    element.style.display = 'none';
+                }, 3000);
             }
-          });
+
+            function loadJson() {
+                try {
+                    const jsonStr = jsonInput.value.trim();
+                    if (!jsonStr) {
+                        showNotification(originalJsonNotification, 'Por favor, ingresa un JSON válido', 'error');
+                        return;
+                    }
+                    
+                    originalJsonData = JSON.parse(jsonStr);
+                    renderJsonTree(originalJsonData);
+                    enableButtons();
+                    showNotification(originalJsonNotification, 'JSON cargado correctamente', 'success');
+                } catch (error) {
+                    showNotification(originalJsonNotification, `Error al parsear JSON: ${error.message}`, 'error');
+                }
+            }
+
+            function loadJsonFromFile(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    jsonInput.value = e.target.result;
+                    loadJson();
+                };
+                reader.onerror = function() {
+                    showNotification(originalJsonNotification, 'Error al leer el archivo', 'error');
+                };
+                reader.readAsText(file);
+            }
+
+            function formatJson() {
+                try {
+                    const jsonStr = jsonInput.value.trim();
+                    if (!jsonStr) {
+                        showNotification(originalJsonNotification, 'No hay JSON para formatear', 'error');
+                        return;
+                    }
+                    
+                    const formattedJson = JSON.stringify(JSON.parse(jsonStr), null, 4);
+                    jsonInput.value = formattedJson;
+                    showNotification(originalJsonNotification, 'JSON formateado correctamente', 'success');
+                } catch (error) {
+                    showNotification(originalJsonNotification, `Error al formatear JSON: ${error.message}`, 'error');
+                }
+            }
+
+            function renderJsonTree(data, parentPath = '') {
+                jsonTree.innerHTML = '';
+                buildJsonTree(data, jsonTree, parentPath);
+                
+                // Agregar event listeners a los elementos del árbol
+                const expandButtons = jsonTree.querySelectorAll('.json-node-expand');
+                expandButtons.forEach(button => {
+                    button.addEventListener('click', toggleNode);
+                });
+                
+                const checkboxes = jsonTree.querySelectorAll('.checkbox');
+                checkboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', handleNodeSelection);
+                });
+            }
+
+            function buildJsonTree(data, parentElement, parentPath = '') {
+                if (data === null || data === undefined) {
+                    parentElement.innerHTML = '<span class="json-null">null</span>';
+                    return;
+                }
+
+                if (typeof data !== 'object') {
+                    parentElement.innerHTML = formatValue(data);
+                    return;
+                }
+
+                const isArray = Array.isArray(data);
+                
+                for (const key in data) {
+                    const value = data[key];
+                    const path = parentPath ? `${parentPath}.${key}` : key;
+                    const nodeDiv = document.createElement('div');
+                    nodeDiv.className = 'json-node';
+                    
+                    const labelDiv = document.createElement('div');
+                    labelDiv.className = 'json-node-label';
+                    
+                    // Checkbox para selección
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.className = 'checkbox';
+                    checkbox.dataset.path = path;
+                    checkbox.checked = selectedPaths.has(path);
+                    
+                    // Botón para expandir/contraer
+                    const expandBtn = document.createElement('span');
+                    expandBtn.className = 'json-node-expand';
+                    
+                    // Etiqueta con el nombre de la propiedad
+                    const keySpan = document.createElement('span');
+                    keySpan.className = 'json-key';
+                    keySpan.textContent = isArray ? `[${key}]` : key;
+                    
+                    labelDiv.appendChild(checkbox);
+                    
+                    if (typeof value === 'object' && value !== null) {
+                        expandBtn.textContent = '▼';
+                        labelDiv.appendChild(expandBtn);
+                        labelDiv.appendChild(keySpan);
+                        
+                        if (isArray) {
+                            labelDiv.appendChild(document.createTextNode(`: Array(${Object.keys(value).length})`));
+                        } else {
+                            labelDiv.appendChild(document.createTextNode(': {…}'));
+                        }
+                        
+                        nodeDiv.appendChild(labelDiv);
+                        
+                        const contentDiv = document.createElement('div');
+                        contentDiv.className = 'json-node-content';
+                        nodeDiv.appendChild(contentDiv);
+                        
+                        buildJsonTree(value, contentDiv, path);
+                    } else {
+                        labelDiv.appendChild(keySpan);
+                        labelDiv.appendChild(document.createTextNode(': '));
+                        labelDiv.appendChild(formatValueElement(value));
+                        nodeDiv.appendChild(labelDiv);
+                    }
+                    
+                    parentElement.appendChild(nodeDiv);
+                }
+            }
+
+            function formatValue(value) {
+                if (value === null) return '<span class="json-null">null</span>';
+                
+                switch (typeof value) {
+                    case 'string':
+                        return `<span class="json-string">"${escapeHtml(value)}"</span>`;
+                    case 'number':
+                        return `<span class="json-number">${value}</span>`;
+                    case 'boolean':
+                        return `<span class="json-boolean">${value}</span>`;
+                    default:
+                        return String(value);
+                }
+            }
+
+            function formatValueElement(value) {
+                const span = document.createElement('span');
+                
+                if (value === null) {
+                    span.className = 'json-null';
+                    span.textContent = 'null';
+                } else {
+                    switch (typeof value) {
+                        case 'string':
+                            span.className = 'json-string';
+                            span.textContent = `"${value}"`;
+                            break;
+                        case 'number':
+                            span.className = 'json-number';
+                            span.textContent = value;
+                            break;
+                        case 'boolean':
+                            span.className = 'json-boolean';
+                            span.textContent = value;
+                            break;
+                        default:
+                            span.textContent = String(value);
+                    }
+                }
+                
+                return span;
+            }
+
+            function escapeHtml(str) {
+                return str
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
+
+            function toggleNode(event) {
+                const label = event.target.parentElement;
+                const nodeContent = label.nextElementSibling;
+                
+                if (nodeContent && nodeContent.classList.contains('json-node-content')) {
+                    if (nodeContent.style.display === 'none') {
+                        nodeContent.style.display = 'block';
+                        event.target.textContent = '▼';
+                    } else {
+                        nodeContent.style.display = 'none';
+                        event.target.textContent = '►';
+                    }
+                }
+            }
+
+            function handleNodeSelection(event) {
+                const path = event.target.dataset.path;
+                const checked = event.target.checked;
+                
+                if (checked) {
+                    selectedPaths.add(path);
+                } else {
+                    selectedPaths.delete(path);
+                }
+                
+                // Actualizar estado del botón de extracción
+                extractSelectedBtn.disabled = selectedPaths.size === 0;
+            }
+
+            function selectAllNodes() {
+                const checkboxes = jsonTree.querySelectorAll('.checkbox');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = true;
+                    selectedPaths.add(checkbox.dataset.path);
+                });
+                extractSelectedBtn.disabled = selectedPaths.size === 0;
+            }
+
+            function deselectAllNodes() {
+                const checkboxes = jsonTree.querySelectorAll('.checkbox');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                selectedPaths.clear();
+                extractSelectedBtn.disabled = true;
+            }
+
+            function extractSelectedNodes() {
+                if (!originalJsonData || selectedPaths.size === 0) {
+                    showNotification(treeNotification, 'No hay nodos seleccionados para extraer', 'error');
+                    return;
+                }
+                
+                let result = {};
+                
+                selectedPaths.forEach(path => {
+                    const value = getValueByPath(originalJsonData, path);
+                    if (value !== undefined) {
+                        setValueByPath(result, path, value);
+                    }
+                });
+                
+                extractedJson.value = JSON.stringify(result, null, 4);
+                enableExtractedButtons();
+                showNotification(treeNotification, 'Nodos extraídos correctamente', 'success');
+            }
+
+            function getValueByPath(obj, path) {
+                const parts = path.split('.');
+                let current = obj;
+                
+                for (const part of parts) {
+                    if (current === null || current === undefined) {
+                        return undefined;
+                    }
+                    
+                    // Manejar arrays con índices
+                    if (part.match(/^\[\d+\]$/)) {
+                        const index = parseInt(part.slice(1, -1));
+                        current = current[index];
+                    } else {
+                        current = current[part];
+                    }
+                }
+                
+                return current;
+            }
+
+            function setValueByPath(obj, path, value) {
+                const parts = path.split('.');
+                let current = obj;
+                
+                for (let i = 0; i < parts.length - 1; i++) {
+                    const part = parts[i];
+                    
+                    // Manejar arrays con índices
+                    if (part.match(/^\[\d+\]$/)) {
+                        const index = parseInt(part.slice(1, -1));
+                        
+                        if (!Array.isArray(current)) {
+                            current = [];
+                        }
+                        
+                        if (!(index in current)) {
+                            current[index] = {};
+                        }
+                        
+                        if (i === parts.length - 2) {
+                            current[index] = value;
+                            return;
+                        }
+                        
+                        current = current[index];
+                    } else {
+                        if (!(part in current)) {
+                            current[part] = {};
+                        }
+                        
+                        current = current[part];
+                    }
+                }
+                
+                const lastPart = parts[parts.length - 1];
+                
+                // Manejar arrays con índices
+                if (lastPart.match(/^\[\d+\]$/)) {
+                    const index = parseInt(lastPart.slice(1, -1));
+                    
+                    if (!Array.isArray(current)) {
+                        current = [];
+                    }
+                    
+                    current[index] = value;
+                } else {
+                    current[lastPart] = value;
+                }
+            }
+
+            function saveJsonToLocalStorage() {
+                const jsonToSave = extractedJson.value;
+                if (!jsonToSave) {
+                    showNotification(extractedJsonNotification, 'No hay JSON para guardar', 'error');
+                    return;
+                }
+                
+                const timestamp = new Date().toISOString();
+                const jsonName = prompt('Ingresa un nombre para este JSON:', `JSON_${timestamp}`);
+                
+                if (!jsonName) return;
+                
+                try {
+                    const jsonData = JSON.parse(jsonToSave);
+                    savedJsons[jsonName] = {
+                        data: jsonData,
+                        timestamp: timestamp
+                    };
+                    
+                    localStorage.setItem('savedJsons', JSON.stringify(savedJsons));
+                    renderSavedJsonsList();
+                    showNotification(extractedJsonNotification, 'JSON guardado correctamente', 'success');
+                } catch (error) {
+                    showNotification(extractedJsonNotification, `Error al guardar JSON: ${error.message}`, 'error');
+                }
+            }
+
+            function loadSavedJsonsFromLocalStorage() {
+                const saved = localStorage.getItem('savedJsons');
+                return saved ? JSON.parse(saved) : {};
+            }
+
+            function renderSavedJsonsList() {
+                savedJsonsList.innerHTML = '';
+                
+                if (Object.keys(savedJsons).length === 0) {
+                    savedJsonsList.innerHTML = '<li>No hay JSONs guardados</li>';
+                    return;
+                }
+                
+                for (const name in savedJsons) {
+                    const li = document.createElement('li');
+                    
+                    const nameSpan = document.createElement('span');
+                    nameSpan.textContent = name;
+                    li.appendChild(nameSpan);
+                    
+                    const buttonsDiv = document.createElement('div');
+                    buttonsDiv.className = 'saved-json-buttons';
+                    
+                    const editBtn = document.createElement('button');
+                    editBtn.textContent = 'Editar';
+                    editBtn.className = 'button-secondary';
+                    editBtn.addEventListener('click', () => loadSavedJson(name));
+                    
+                    const downloadBtn = document.createElement('button');
+                    downloadBtn.textContent = 'Descargar';
+                    downloadBtn.className = 'button-success';
+                    downloadBtn.addEventListener('click', () => downloadSavedJson(name));
+                    
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.textContent = 'Eliminar';
+                    deleteBtn.className = 'button-danger';
+                    deleteBtn.addEventListener('click', () => deleteSavedJson(name));
+                    
+                    buttonsDiv.appendChild(editBtn);
+                    buttonsDiv.appendChild(downloadBtn);
+                    buttonsDiv.appendChild(deleteBtn);
+                    
+                    li.appendChild(buttonsDiv);
+                    savedJsonsList.appendChild(li);
+                }
+            }
+
+            function loadSavedJson(name) {
+                if (!savedJsons[name]) return;
+                
+                extractedJson.value = JSON.stringify(savedJsons[name].data, null, 4);
+                enableExtractedButtons();
+                showNotification(extractedJsonNotification, `JSON "${name}" cargado para editar`, 'success');
+            }
+
+            function downloadSavedJson(name) {
+                if (!savedJsons[name]) return;
+                
+                const jsonData = JSON.stringify(savedJsons[name].data, null, 4);
+                const blob = new Blob([jsonData], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${name}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+
+            function deleteSavedJson(name) {
+                if (!confirm(`¿Estás seguro de que deseas eliminar "${name}"?`)) return;
+                
+                delete savedJsons[name];
+                localStorage.setItem('savedJsons', JSON.stringify(savedJsons));
+                renderSavedJsonsList();
+                showNotification(extractedJsonNotification, `JSON "${name}" eliminado`, 'success');
+            }
+
+            function downloadJson() {
+                const jsonToDownload = extractedJson.value;
+                if (!jsonToDownload) {
+                    showNotification(extractedJsonNotification, 'No hay JSON para descargar', 'error');
+                    return;
+                }
+                
+                const fileName = prompt('Ingresa un nombre para el archivo:', 'extracted.json');
+                if (!fileName) return;
+                
+                const blob = new Blob([jsonToDownload], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName.endsWith('.json') ? fileName : `${fileName}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+
+            function clearExtractedJson() {
+                extractedJson.value = '';
+                disableExtractedButtons();
+            }
+
+            function applyPathFilter() {
+                const path = pathInput.value.trim();
+                if (!originalJsonData) {
+                    showNotification(treeNotification, 'No hay JSON cargado para filtrar', 'error');
+                    return;
+                }
+                
+                if (!path) {
+                    renderJsonTree(originalJsonData);
+                    return;
+                }
+                
+                try {
+                    const filteredData = getValueByPath(originalJsonData, path);
+                    if (filteredData === undefined) {
+                        showNotification(treeNotification, `No se encontró la ruta: ${path}`, 'error');
+                        return;
+                    }
+                    
+                    // Renderizar solo la parte filtrada
+                    renderJsonTree(filteredData, path);
+                    showNotification(treeNotification, `Filtro aplicado: ${path}`, 'success');
+                } catch (error) {
+                    showNotification(treeNotification, `Error al aplicar filtro: ${error.message}`, 'error');
+                }
+            }
+
+            function enableButtons() {
+                selectAllBtn.disabled = false;
+                deselectAllBtn.disabled = false;
+                extractSelectedBtn.disabled = true; // Se habilitará cuando se seleccionen nodos
+                pathInput.disabled = false;
+                applyPathBtn.disabled = false;
+            }
+
+            function enableExtractedButtons() {
+                saveJsonBtn.disabled = false;
+                downloadJsonBtn.disabled = false;
+                clearExtractedBtn.disabled = false;
+            }
+
+            function disableExtractedButtons() {
+                saveJsonBtn.disabled = true;
+                downloadJsonBtn.disabled = true;
+                clearExtractedBtn.disabled = true;
+            }
         });
-      </script>
-    </div>
-    <!-- Menú lateral -->
-    <div class="menu__sidebar">
-      <ul>
-        <li><a href="#">Inicio</a></li>
-        <li class="submenu">
-          <a href="#">Animaciones</a>
-          <ul>
-            <li><a href="animaciones_texto.HTML">Animaciones de texto</a></li>
-            <li><a href="#">En Proceso</a></li>
-            <li><a href="#">Completadas</a></li>
-          </ul>
-        </li>
-        <li><a href="#">Reportes</a></li>
-      </ul>
-    </div>
-    <div class="theme-space">
-      <div>
-        <h1>Juego de Animaciones de Texto</h1>
-        <p>
-          Haz clic en cada texto "riveradev" para capturarlo. ¡Captura los 100
-          textos lo más rápido posible!
-        </p>
-        <div class="contenedor__laboratorio">
-          <!-- Texto con las diferentes animaciones -->
-          <!-- Repetimos "riveradev" con diferentes clases para aplicar las animaciones -->
-
-          <!-- Texto con las diferentes animaciones -->
-          <!-- Repetimos "riveradev" con diferentes clases para aplicar las animaciones -->
-          <div class="text texto__1">riveradev</div>
-          <div class="text texto__2">riveradev</div>
-          <div class="text texto__3">riveradev</div>
-          <div class="text texto__4">riveradev</div>
-          <div class="text texto__5">riveradev</div>
-          <div class="text texto__6">riveradev</div>
-          <div class="text texto__7">riveradev</div>
-          <div class="text texto__8">sara</div>
-          <div class="text texto__9">riveradev</div>
-          <div class="text texto__10">riveradev</div>
-          <div class="text texto__11">riveradev</div>
-          <div class="text texto__12">riveradev</div>
-          <div class="text texto__13">riveradev</div>
-          <div class="text texto__14">riveradev</div>
-          <div class="text texto__15">riveradev</div>
-          <div class="text texto__16">riveradev</div>
-          <div class="text texto__17">riveradev</div>
-          <div class="text texto__18">riveradev</div>
-          <div class="text texto__19">riveradev</div>
-          <div class="text texto__20">riveradev</div>
-          <div class="text texto__21">riveradev</div>
-          <div class="text texto__22">riveradev</div>
-          <div class="text texto__23">riveradev</div>
-          <div class="text texto__24">riveradev</div>
-          <div class="text texto__25">riveradev</div>
-          <div class="text texto__26">riveradev</div>
-          <div class="text texto__27">riveradev</div>
-          <div class="text texto__28">riveradev</div>
-          <div class="text texto__29">riveradev</div>
-          <div class="text texto__30">riveradev</div>
-          <div class="text texto__31">riveradev</div>
-          <div class="text texto__32">riveradev</div>
-          <div class="text texto__33">riveradev</div>
-          <div class="text texto__34">riveradev</div>
-          <div class="text texto__35">riveradev</div>
-          <div class="text texto__36">riveradev</div>
-          <div class="text texto__37">riveradev</div>
-          <div class="text texto__38">riveradev</div>
-          <div class="text texto__39">riveradev</div>
-          <div class="text texto__40">riveradev</div>
-          <div class="text texto__41">riveradev</div>
-          <div class="text texto__42">riveradev</div>
-          <div class="text texto__43">riveradev</div>
-          <div class="text texto__44">riveradev</div>
-          <div class="text texto__45">riveradev</div>
-          <div class="text texto__46">riveradev</div>
-          <div class="text texto__47">riveradev</div>
-          <div class="text texto__48">riveradev</div>
-          <div class="text texto__49">riveradev</div>
-          <div class="text texto__50">riveradev</div>
-          <div class="text texto__51">riveradev</div>
-          <div class="text texto__52">riveradev</div>
-          <div class="text texto__53">riveradev</div>
-          <div class="text texto__54">riveradev</div>
-          <div class="text texto__55">riveradev</div>
-          <div class="text texto__56">riveradev</div>
-          <div class="text texto__57">riveradev</div>
-          <div class="text texto__58">riveradev</div>
-          <div class="text texto__59">riveradev</div>
-          <div class="text texto__60">riveradev</div>
-          <div class="text texto__61">riveradev</div>
-          <div class="text texto__62">riveradev</div>
-          <div class="text texto__63">riveradev</div>
-          <div class="text texto__64">riveradev</div>
-          <div class="text texto__65">riveradev</div>
-          <div class="text texto__66">riveradev</div>
-          <div class="text texto__67">riveradev</div>
-          <div class="text texto__68">riveradev</div>
-          <div class="text texto__69">riveradev</div>
-          <div class="text texto__70">riveradev</div>
-          <div class="text texto__71">riveradev</div>
-          <div class="text texto__72">riveradev</div>
-          <div class="text texto__73">riveradev</div>
-          <div class="text texto__74">riveradev</div>
-          <div class="text texto__75">riveradev</div>
-          <div class="text texto__76">riveradev</div>
-          <div class="text texto__77">riveradev</div>
-          <div class="text texto__78">riveradev</div>
-          <div class="text texto__79">riveradev</div>
-          <div class="text texto__80">riveradev</div>
-          <div class="text texto__81">texto__81</div>
-          <div class="text texto__82"></div>
-          <div class="text texto__83"></div>
-          <div class="text texto__84"></div>
-          <div class="text texto__85"></div>
-          <div class="text texto__86"></div>
-          <div class="text texto__87"></div>
-          <div class="text texto__88"></div>
-          <div class="text texto__89"></div>
-          <div class="text texto__90"></div>
-          <div class="text texto__91"></div>
-          <div class="text texto__92"></div>
-          <div class="text texto__93"></div>
-          <div class="text texto__94">sara</div>
-
-          <div class="text texto__100">riveradev</div>
-        </div>
-        <p id="message"></p>
-
-        <script>
-          // Obtener todos los elementos de texto
-          const texts = document.querySelectorAll(".text");
-          let currentSaraIndex = 94; // El índice inicial de "Sara"
-
-          // Función para mover "Sara" a un nuevo div aleatorio
-          function moveSara() {
-            // Eliminar el texto "Sara" del div actual
-            texts[currentSaraIndex].innerText = "riveradev"; // Reemplazamos el texto original
-
-            // Generar un nuevo índice aleatorio que sea diferente del actual
-            let newSaraIndex;
-            do {
-              newSaraIndex = Math.floor(Math.random() * texts.length);
-            } while (newSaraIndex === currentSaraIndex);
-
-            // Asignar el texto "Sara" al nuevo div
-            texts[newSaraIndex].innerText = "Sara";
-            currentSaraIndex = newSaraIndex;
-          }
-
-          // Función para manejar el clic en el texto
-          function handleClick(event) {
-            const clickedDiv = event.target;
-
-            // Solo permitir que se haga clic en el div con "Sara"
-            if (clickedDiv.innerText === "Sara") {
-              moveSara(); // Mover "Sara" a otro div aleatorio
-            } else {
-              alert("¡Debes tocar el texto 'Sara' para continuar!");
-            }
-          }
-
-          // Añadir el evento de clic solo a los divs que contienen "Sara"
-          texts.forEach((text) => {
-            text.addEventListener("click", handleClick);
-          });
-        </script>
-      </div>
-    </div>
-    <div class="scrolling-text">
-      <span>S</span><span>C</span><span>R</span><span>O</span><span>L</span
-      ><span>L</span><span>I</span><span>N</span><span>G</span>
-      <span>&nbsp;</span>
-      <span>L</span><span>E</span><span>T</span><span>T</span><span>E</span
-      ><span>R</span><span>S</span>
-    </div>
-    <div>
-      <div class="texto__animado__zoom">Texto Animado con Zoom</div>
-
-      <div class="efectos__combinados">
-        <h2>Texto con Efectos Combinados</h2>
-        <h3 class="efectos__combinados__pulso">Texto con Pulso</h3>
-      </div>
-
-      <div class="pulso">Pulso en Texto</div>
-
-      <div class="animacion__resplandor">Texto con Efecto de Resplandor</div>
-    </div>
-
-    <h1 class="dynamic-charts">Business Intelligence</h1>
-    <h2 class="dynamic-charts">Análisis de Datos Avanzado</h2>
-    <div class="combined-effects">
-      <h1>Business Intelligence</h1>
-      <h2>Análisis de Datos Avanzado</h2>
-    </div>
-    <div class="texto__animado__zoom">Texto Animado con Zoom</div>
-
-    <div class="efectos__combinados">
-      <h2>Texto con Efectos Combinados</h2>
-      <h3 class="efectos__combinados__pulso">Texto con Pulso</h3>
-    </div>
-
-    <div class="pulso">Pulso en Texto</div>
-
-    <div class="animacion__resplandor">Texto con Efecto de Resplandor</div>
-    <section class="seccion__hero">
-      <div class="contenido__hero">
-        <div class="contenedor__texto__hero marvel__negrita">
-          <span class="texto__hero">¡Hola Mundo!</span>
-        </div>
-        <div class="imagen__seccion__hero">
-          <img src="https://via.placeholder.com/150" alt="Imagen de prueba" />
-        </div>
-      </div>
-    </section>
-  </body>
+    </script>
+</body>
 </html>
