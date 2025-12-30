@@ -19,7 +19,7 @@ Este proyecto HTML es una práctica que combina múltiples tecnologías con el o
 
 ### Código
 - **Microsoft Copilot**: Se utilizó para generar código y asistir en la creación de este proyecto.
-- **OpenAI ChatGPT**: Proporcionó asistencia conversacional y generación de texto durante el desarrollo.
+- **OpenAI ChatGPT**: Proporcionó asistencia conversacional y generación de texto durante el desarrollo.6 
 
 ### Plantilla de Código main 
 - **Template Original**: El proyecto utiliza una plantilla desarrollada por otro programador, la cual está disponible en un repositorio de GitHub de código abierto.
